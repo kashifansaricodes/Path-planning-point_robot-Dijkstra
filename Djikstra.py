@@ -43,6 +43,8 @@ plt.show()
 actions_set = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, 1), (1, -1), (-1, -1)]
 cost_straight = 1.0
 cost_diagonal = 1.4
+video_name = 'dijkstra_scan.mp4'
+out = cv2.VideoWriter(video_name, cv2.VideoWriter_fourcc(*'mp4v'), 10, (map.shape[1], map.shape[0]))
 
 # Define the function to calculate the cost of moving from one node to another
 def calculate_cost(current_cost, action):
@@ -124,7 +126,7 @@ while True:
         print(goal_pixel_value)
     else:
         print("Your goal cordinates are correct. Search in progress PLEASE WAIT..." )
-        print(goal_pixel_value)
+        print("Goal coordinate has following pixel values: ", goal_pixel_value)
         break 
 
 # Run Dijkstra's algorithm
@@ -138,8 +140,9 @@ if path:
     for node in path:
         # Change color to black for nodes in the path
         map[node[0], node[1]] = [0, 0, 0]
-        # Display the image
-        # plt.imshow(map.astype(int))
+        frame = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_RGB2BGR)
+        out.write(frame)
+        
 else:
     print("No path found.")
 
