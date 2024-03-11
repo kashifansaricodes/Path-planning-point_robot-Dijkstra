@@ -2,7 +2,7 @@ ENPM661 Project:2 By Kashif Ansari (120278280)
 -------------------------------------------------------------------------------------------------
 
 
-#This repository has following files:
+#This repository has the following files:
 
 >Djikstra.py
 >Video.mp4
@@ -19,3 +19,6 @@ ENPM661 Project:2 By Kashif Ansari (120278280)
 4. Input goal co-ordinates.
 5. Path to reach the goal as an output will be generated.
 6. Finally the scanned map will appear with the generated path. 
+
+
+Github link: https://github.com/kashifansaricodes/Path-planning-point_robot-Dijkstra-Algorithm-
