@@ -4,9 +4,8 @@ import cv2
 import heapq
 
 # Generating map
-map = np.ones((500, 1200, 3))
-# # Generating boundary clearance
-# cv2.rectangle(map, (0,0), (1200, 500), (0, 0, 255), 5)
+map = np.zeros((500, 1200, 3))
+
 # Generating rectangular clearance
 cv2.rectangle(map, pt1=(100-5, 0), pt2=(175+5, 400+5), color=(0, 0, 255), thickness=-1)
 cv2.rectangle(map, pt1=(275-5, 100-5), pt2=((275+75+5), 500), color=(0, 0, 255), thickness=-1)
@@ -79,8 +78,8 @@ def dijkstra(start, goal, map):
             dx, dy = action
             next_node = (current_node[0] + dx, current_node[1] + dy)
 
-            if (0 <= next_node[0] < map.shape[0] and 0 <= next_node[1] < map.shape[1] and
-                    next_node not in closed_list and np.all(map[next_node[0], next_node[1]] == 1)):
+            if (5 <= next_node[0] < (map.shape[0]-5) and 5 <= next_node[1] < (map.shape[1]-5) and
+                    next_node not in closed_list and np.all(map[next_node[0], next_node[1]] == 0)):
                 new_cost = calculate_cost(cost_so_far[current_node], action)
 
                 if next_node not in cost_so_far or new_cost < cost_so_far[next_node]:
@@ -102,9 +101,9 @@ while True:
     # Access the pixel value using the index
     start_pixel_value = map[start_y, start_x]
 
-    # Check if the pixel value corresponds to red or blue
-    if (start_pixel_value == [255, 0, 0]).all() or (start_pixel_value == [0, 0, 255]).all():
-        print("Your goal is on an obstacle. Please re-enter the goal coordinates.")
+    # Check if the pixel value corresponds to red or blue and if the start coordinates are on the boundary
+    if (start_pixel_value == [255, 0, 0]).all() or (start_pixel_value == [0, 0, 255]).all() or (5 >= start_y >= (map.shape[0]-5)) or (5 >= start_y < (map.shape[1]-5)):
+        print("Your start is on an obstacle. Please re-enter the goal coordinates.")
 
     else:
         print("Your start cordinates are correct, proceed ahead" )
@@ -119,11 +118,13 @@ while True:
     # Access the pixel value using the index
     goal_pixel_value = map[goal_y, goal_x]
 
-    # Check if the pixel value corresponds to red or blue
-    if (goal_pixel_value == [255, 0, 0]).all() or (goal_pixel_value == [0, 0, 255]).all():
+    # Check if the pixel value corresponds to red or blue and if the goal coordinates are on the boundary
+    if (goal_pixel_value == [255, 0, 0]).all() or (goal_pixel_value == [0, 0, 255]).all() or (5 >= goal_x >= (map.shape[0]-5)) or (5 >= goal_x < (map.shape[1]-5)):
         print("Your goal is on an obstacle. Please re-enter the goal coordinates.")
+        print(goal_pixel_value)
     else:
         print("Your goal cordinates are correct. Search in progress PLEASE WAIT..." )
+        print(goal_pixel_value)
         break 
 
 # Run Dijkstra's algorithm
