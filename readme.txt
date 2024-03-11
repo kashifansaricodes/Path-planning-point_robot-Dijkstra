@@ -10,6 +10,15 @@ ENPM661 Project:2 By Kashif Ansari (120278280)
 >Scanned_map.png
 
 
+#Libraries used:
+
+>numpy
+>matplotlib.pyplot
+>cv2
+>heapq
+
+
+
 
 #Steps to run the program:
 
