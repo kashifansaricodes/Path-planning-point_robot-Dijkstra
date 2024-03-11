@@ -7,11 +7,11 @@ import heapq
 map = np.zeros((500, 1200, 3))
 
 # Generating rectangular clearance
-cv2.rectangle(map, pt1=(100-5, 0), pt2=(175+5, 400+5), color=(0, 0, 255), thickness=-1)
-cv2.rectangle(map, pt1=(275-5, 100-5), pt2=((275+75+5), 500), color=(0, 0, 255), thickness=-1)
+cv2.rectangle(map, pt1=(95, 0), pt2=(180, 405), color=(0, 0, 255), thickness=-1)
+cv2.rectangle(map, pt1=(270, 95), pt2=((355), 500), color=(0, 0, 255), thickness=-1)
 # Generating rectangles obstacle
 cv2.rectangle(map, pt1=(100, 0), pt2=(175, 400), color=(255, 0, 0), thickness=-1)
-cv2.rectangle(map, pt1=(275, 100), pt2=((275+75), 500), color=(255, 0, 0), thickness=-1)
+cv2.rectangle(map, pt1=(275, 100), pt2=((350), 500), color=(255, 0, 0), thickness=-1)
 # Generating hexagonal clearance (second method)
 vertices_hexagon = 6
 center_hexagon = (650, 250)
@@ -26,13 +26,13 @@ hexagon_points = cv2.ellipse2Poly(center_hexagon, (radius_hexagon, radius_hexago
 cv2.fillPoly(map, [hexagon_points], (255, 0, 0))
 
 #Generating concave clearance (inverted C)
-cv2.rectangle(map,pt1=(900-5, 50-5), pt2 = (1100+5, 125+5), color = (0, 0, 255), thickness=-1)
-cv2.rectangle(map,pt1=((1200-180-5), (125+5)), pt2 = ((1200-100+5), (50+400-75)), color = (0, 0, 255), thickness=-1)
-cv2.rectangle(map,pt1=((1200-100-200-5), (50+400-75-5)), pt2 = ((1100+5),(50+400+5)), color = (0, 0, 255), thickness=-1)
+cv2.rectangle(map,pt1=(895, 45), pt2 = (1105, 130), color = (0, 0, 255), thickness=-1)
+cv2.rectangle(map,pt1=((1015), (130)), pt2 = ((1105), (425)), color = (0, 0, 255), thickness=-1)
+cv2.rectangle(map,pt1=((895), (370)), pt2 = ((1105),(455)), color = (0, 0, 255), thickness=-1)
 #Generating concave obstacle (inverted C)
 cv2.rectangle(map,pt1=(900, 50), pt2 = (1100, 125), color = (255, 0, 0), thickness=-1)
-cv2.rectangle(map,pt1=((1200-180), (50+75)), pt2 = ((1200-100), (50+400-75)), color = (255, 0, 0), thickness=-1)
-cv2.rectangle(map,pt1=((1200-100-200), (50+400-75)), pt2 = ((1100),(50+400)), color = (255, 0, 0), thickness=-1)
+cv2.rectangle(map,pt1=((1020), (125)), pt2 = ((1100), (50+375)), color = (255, 0, 0), thickness=-1)
+cv2.rectangle(map,pt1=((900), (375)), pt2 = ((1100),(450)), color = (255, 0, 0), thickness=-1)
 
 # Display the image
 plt.imshow(map.astype(int))
@@ -43,7 +43,7 @@ plt.show()
 actions_set = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, 1), (1, -1), (-1, -1)]
 cost_straight = 1.0
 cost_diagonal = 1.4
-video_name = 'dijkstra_scan.mp4'
+video_name = 'D:\Desktop\djikstra_scan.mp4'
 out = cv2.VideoWriter(video_name, cv2.VideoWriter_fourcc(*'mp4v'), 10, (map.shape[1], map.shape[0]))
 
 # Define the function to calculate the cost of moving from one node to another
@@ -57,10 +57,11 @@ def calculate_cost(current_cost, action):
 def dijkstra(start, goal, map):
     open_list = []
     closed_list = set()
+    visited_list = []
     heapq.heappush(open_list, (0, start)) # 0 being the priority for start
     came_from = {} # parent nodes dictionary
     cost_so_far = {start: 0} # node: cost to reach
-
+    path_iteration =    0
     while open_list:
         current_cost, current_node = heapq.heappop(open_list)
 
@@ -75,7 +76,8 @@ def dijkstra(start, goal, map):
             return path
 
         closed_list.add(current_node)
-
+        visited_list.append(current_node)
+        
         for action in actions_set:
             dx, dy = action
             next_node = (current_node[0] + dx, current_node[1] + dy)
@@ -91,6 +93,12 @@ def dijkstra(start, goal, map):
                     came_from[next_node] = current_node
                     # Update the color of the scanned pixel to green
                     map[next_node[0], next_node[1]] = [0, 255, 0]  # Green color
+                    # frame1 = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_RGB2BGR)
+                    # out.write(frame1)
+                    if path_iteration%10000==0:
+                        frame = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_RGB2BGR)
+                        out.write(frame)
+                    path_iteration+=1
                     
 
     return None  # No path found
@@ -134,14 +142,17 @@ start_node = (start_x, start_y)  # Assuming the robot starts from the bottom-lef
 goal_node = (goal_x, goal_y)
 path = dijkstra(start_node, goal_node, map)
 
+path_iteration = 0
 # Print the path
-if path:
+if path :
     print("Path found:", path)
     for node in path:
         # Change color to black for nodes in the path
         map[node[0], node[1]] = [0, 0, 0]
-        frame = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_RGB2BGR)
-        out.write(frame)
+        if path_iteration%10==0:
+            frame = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_RGB2BGR)
+            out.write(frame)
+        path_iteration+=1
         
 else:
     print("No path found.")
@@ -150,3 +161,6 @@ else:
 plt.imshow(map.astype(int))
 plt.title("Map after scanning")
 plt.show()
+
+out.release()
+cv2.destroyAllWindows()
