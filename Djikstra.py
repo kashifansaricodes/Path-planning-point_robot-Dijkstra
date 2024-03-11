@@ -1,3 +1,5 @@
+## Anshuman Sent this code-
+
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
@@ -5,6 +7,9 @@ import heapq
 
 # Generating map
 map = np.zeros((500, 1200, 3))
+red = np.array([255, 0, 0])
+blue = np.array([0, 0, 255])
+black = np.array([0, 0, 0])
 
 # Generating rectangular clearance
 cv2.rectangle(map, pt1=(95, 0), pt2=(180, 405), color=(0, 0, 255), thickness=-1)
@@ -62,6 +67,7 @@ def dijkstra(start, goal, map):
     came_from = {} # parent nodes dictionary
     cost_so_far = {start: 0} # node: cost to reach
     path_iteration =    0
+    temp_x, temp_y = 400, 400
     while open_list:
         current_cost, current_node = heapq.heappop(open_list)
 
@@ -77,13 +83,12 @@ def dijkstra(start, goal, map):
 
         closed_list.add(current_node)
         visited_list.append(current_node)
-        
+
         for action in actions_set:
             dx, dy = action
             next_node = (current_node[0] + dx, current_node[1] + dy)
 
-            if (5 <= next_node[0] < (map.shape[0]-5) and 5 <= next_node[1] < (map.shape[1]-5) and
-                    next_node not in closed_list and np.all(map[next_node[0], next_node[1]] == 0)):
+            if (5 <= next_node[0] < (map.shape[0]-5)) and (5 <= next_node[1] < (map.shape[1]-5)) and (next_node not in closed_list) and (np.array_equal(map[next_node[0], next_node[1]], black)):
                 new_cost = calculate_cost(cost_so_far[current_node], action)
 
                 if next_node not in cost_so_far or new_cost < cost_so_far[next_node]:
@@ -99,7 +104,7 @@ def dijkstra(start, goal, map):
                         frame = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_RGB2BGR)
                         out.write(frame)
                     path_iteration+=1
-                    
+
 
     return None  # No path found
 
@@ -109,15 +114,19 @@ while True:
     start_y = int(input("Enter your start y-coordinate: "))
 
     # Access the pixel value using the index
-    start_pixel_value = map[start_y, start_x]
+    if (5 <= start_y <= (map.shape[0]-5)) and (5 <= start_x < (map.shape[1]-5)):
+        start_pixel_value = [int(value) for value in map[start_y, start_x]]
+    else:
+        print("Your values are not within boundary. Please re-enter the start coordinates.")
+        continue
 
     # Check if the pixel value corresponds to red or blue and if the start coordinates are on the boundary
-    if (start_pixel_value == [255, 0, 0]).all() or (start_pixel_value == [0, 0, 255]).all() or (5 >= start_y >= (map.shape[0]-5)) or (5 >= start_y < (map.shape[1]-5)):
+    if np.array_equal(start_pixel_value, red) or np.array_equal(start_pixel_value, blue) or (5 >= start_x >= (map.shape[0]-5)) or (5 >= start_y < (map.shape[1]-5)):
         print("Your start is on an obstacle. Please re-enter the goal coordinates.")
 
     else:
         print("Your start cordinates are correct, proceed ahead" )
-        break   
+        break
 
 # Prompt user for the goal coordinates
 while True:
@@ -126,20 +135,25 @@ while True:
     goal_y = int(input("Enter your goal y-coordinate: "))
 
     # Access the pixel value using the index
-    goal_pixel_value = map[goal_y, goal_x]
+    if (5 <= goal_y <= (map.shape[0]-5)) and (5 <= goal_x <= (map.shape[1]-5)):
+        goal_pixel_value = [int(value) for value in map[goal_y, goal_x]]
+    else:
+        print("Your values are not within boundary. Please re-enter the goal coordinates.")
+        continue
 
     # Check if the pixel value corresponds to red or blue and if the goal coordinates are on the boundary
-    if (goal_pixel_value == [255, 0, 0]).all() or (goal_pixel_value == [0, 0, 255]).all() or (5 >= goal_x >= (map.shape[0]-5)) or (5 >= goal_x < (map.shape[1]-5)):
+    if np.array_equal(goal_pixel_value, red) or np.array_equal(goal_pixel_value, blue):
+
         print("Your goal is on an obstacle. Please re-enter the goal coordinates.")
         print(goal_pixel_value)
     else:
         print("Your goal cordinates are correct. Search in progress PLEASE WAIT..." )
         print("Goal coordinate has following pixel values: ", goal_pixel_value)
-        break 
+        break
 
 # Run Dijkstra's algorithm
-start_node = (start_x, start_y)  # Assuming the robot starts from the bottom-left corner
-goal_node = (goal_x, goal_y)
+start_node = (start_y, start_x)  # Assuming the robot starts from the bottom-left corner
+goal_node = (goal_y, goal_x)
 path = dijkstra(start_node, goal_node, map)
 
 path_iteration = 0
@@ -153,7 +167,7 @@ if path :
             frame = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_RGB2BGR)
             out.write(frame)
         path_iteration+=1
-        
+
 else:
     print("No path found.")
 
